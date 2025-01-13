@@ -1,0 +1,71 @@
+PUSH I
+CONTROL DOWHILE
+    COMMENTARY INITIALIZE
+        Set heap value 1 to zero.
+    COMMENTARY TERMINATED
+    PUSH NUMBERZERO
+    PUSH I H SV
+
+    COMMENTARY INITIALIZE
+        If N % 3 is zero,
+        output "Fizz"
+        and add one to heap value 1.
+    COMMENTARY TERMINATED
+    DO COPY
+    PUSH TRI STACKTOP MODULO
+    STACKTOP F
+    CONTROL IF
+        PUT XX:SEVENTH NUMBERZERO;OUTPUT CH
+        PUT XXX:I NUMBERZERO FIFTH;OUTPUT CH
+        PUT XXX:I BI BI;DO COPY OUTPUT CH
+        OUTPUT CH
+        PUSH I H V
+        STACKTOP PLUSONE
+        PUSH I H SV
+    CONTROL END
+
+    COMMENTARY INITIALIZE
+        If N % 5 is zero,
+        output "Buzz"
+        and add one to heap value 1.
+    COMMENTARY TERMINATED
+    DO COPY
+    PUSH FIFTH STACKTOP MODULO
+    STACKTOP F
+    CONTROL IF
+        PUT XX:SEXTET SEXTET;OUTPUT CH
+        PUT XXX:I I SEVENTH;OUTPUT CH
+        PUT XXX:I BI BI;DO COPY OUTPUT CH
+        OUTPUT CH
+        PUSH I H V
+        STACKTOP PLUSONE
+        PUSH I H SV
+    CONTROL END
+
+    COMMENTARY INITIALIZE
+        If heap value 1 is zero,
+        output N as a number.
+    COMMENTARY TERMINATED
+    PUSH I H V
+    STACKTOP F
+    CONTROL IF
+        DO COPY
+        OUTPUT N
+    CONTROL END
+
+    COMMENTARY INITIALIZE
+        Finally, output a newline.
+    COMMENTARY TERMINATED
+    PUT XX:I NUMBERZERO
+    OUTPUT CH
+
+    COMMENTARY INITIALIZE
+        Add 1 to N,
+        and keep looping if N <= 100.
+    COMMENTARY TERMINATED
+    STACKTOP PLUSONE
+    DO COPY
+    PUT XXX:I NUMBERZERO NUMBERZERO
+    STACKTOP PLUSONE
+    STACKTOP LT
+CONTROL END

@@ -1,0 +1,36 @@
+PUSH BI
+CONTROL DOWHILE
+    DO COPY
+
+    COMMENTARY uncomment for faster checking INITIALIZE
+    PUSH NUMBERZERO PUSH BI STACKTOP MINUS
+    STACKTOP POW
+    STACKTOP PLUSONE
+    COMMENTARY uncomment for faster checking TERMINATED
+
+    COMMENTARY INITIALIZE
+        Test whether each factor divides N evenly.
+    COMMENTARY TERMINATED
+    CONTROL DOWHILE
+        STACKTOP MINUSONE
+        PUSH BI DO COPYN
+        PUSH BI DO COPYN
+        STACKTOP MODULO
+    CONTROL END
+
+    COMMENTARY INITIALIZE
+        If the factor is now below 2,
+        none of the other factors must have worked,
+        so the number must be prime.
+    COMMENTARY TERMINATED
+    PUSH BI STACKTOP LT
+    CONTROL IF
+        DO COPY
+        OUTPUT N
+        PUT XX:I NUMBERZERO
+        OUTPUT CH
+    CONTROL END
+
+    STACKTOP PLUSONE
+    PUSH I
+CONTROL END
