@@ -385,6 +385,8 @@ class BespokeInterpreter:
         digits = convert_to_digits(self.program)
         tokens = self.tokenize(digits)
         ast = self.create_ast(tokens)
+        if not ast:
+            return
 
         self.heap: defaultdict[int, int] = defaultdict(int)
         self.functions: dict[str, Block] = {}
