@@ -40,6 +40,11 @@ for this project. A tutorial on how to use each feature of the language is also
 
 ## Changelog
 
+### v1.0.2 (2025-01-15)
+
+- Fixed error on empty program
+- Fixed behavior of `CONTINUED` numbers
+
 ### v1.0.1 (2025-01-15)
 
 - Fixed behavior of `DO ROT` and `DO ROTINVERSE` with negative numbers
