@@ -35,7 +35,8 @@ Poetic programs I've ever written.
 ## Documentation
 
 Documentation can be found [on the GitHub wiki](https://github.com/WinslowJosiah/bespokelang/wiki/Documentation)
-for this project.
+for this project. A tutorial on how to use each feature of the language is also
+[on the wiki](https://github.com/WinslowJosiah/bespokelang/wiki/Tutorial).
 
 ## Changelog
 
