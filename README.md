@@ -7,7 +7,7 @@ Run programs written in the Bespoke esolang.
 `bespokelang` is installable from PyPI:
 
 ```bash
-$ pip install --upgrade bespokelang
+pip install --upgrade bespokelang
 ```
 
 ## What is Bespoke?
