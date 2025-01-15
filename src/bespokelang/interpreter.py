@@ -506,7 +506,7 @@ class BespokeInterpreter:
                     self.stack[-n:] = [self.stack[-1]] + self.stack[-n:-1]
                 # A negative n brings items from bottom to top
                 else:
-                    self.stack[-n:] = self.stack[-n + 1:] + [self.stack[-n]]
+                    self.stack[n:] = self.stack[n + 1:] + [self.stack[n]]
 
             # DO COPY
             case Token("2", "4", _):
@@ -580,7 +580,7 @@ class BespokeInterpreter:
                     self.stack[-n:] = self.stack[-n + 1:] + [self.stack[-n]]
                 # A negative n brings items from top to bottom
                 elif n < 0:
-                    self.stack[-n:] = [self.stack[-1]] + self.stack[-n:-1]
+                    self.stack[n:] = [self.stack[-1]] + self.stack[n:-1]
 
             # PUT
             case Token("3", _, args):
