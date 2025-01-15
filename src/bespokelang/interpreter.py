@@ -364,9 +364,9 @@ class BespokeInterpreter:
                     # or CONTROL FUNCTION command
                     match last_token:
                         case Token("3", _, _) | Token("7", "4" | "8", _):
-                            raise UnexpectedContinuedNumber
-                        case _:
                             pass
+                        case _:
+                            raise UnexpectedContinuedNumber
 
                     block[-1] = Token(category, command, args + continuation)
                 # COMMENTARY
