@@ -39,6 +39,10 @@ for this project.
 
 ## Changelog
 
+### v1.0.1 (2025-01-15)
+
+- Fixed behavior of `DO ROT` and `DO ROTINVERSE` with negative numbers
+
 ### v1.0.0 (2025-01-13)
 
 Initial release.
