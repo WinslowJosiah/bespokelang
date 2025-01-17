@@ -102,7 +102,7 @@ def int_nth_root(x: int, n: int):
         raise ValueError("n must be positive")
     if not x:
         return 0
-    if x <= 0:
+    if x < 0:
         raise ValueError("x must be nonnegative")
 
     q, r = x + 1, x
