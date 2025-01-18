@@ -388,7 +388,7 @@ class BespokeInterpreter:
                 # CONTROL OTHERWISE
                 case Token("7", "9", _):
                     if not block or not isinstance(block[0], Token):
-                        raise UnexpectedElse
+                        raise UnexpectedOtherwise
 
                     first_token = category, command, args = block[0]
                     # CONTROL OTHERWISE is only valid as the last item
@@ -397,7 +397,7 @@ class BespokeInterpreter:
                         case Token("7", "2", _):
                             pass
                         case _:
-                            raise UnexpectedElse
+                            raise UnexpectedOtherwise
 
                     # This command "closes" the block, similarly to
                     # CONTROL END

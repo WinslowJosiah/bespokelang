@@ -4,8 +4,8 @@ __all__ = [
     "TokenizerException", "ExpectedSpecifier", "ImproperSizedNumber",
     "UnterminatedCommentBody", "UnterminatedCommentSignature",
 
-    "ParserException", "UnexpectedContinuedNumber", "UnexpectedElse",
-    "UnexpectedEndOfBlock",
+    "ParserException", "UnexpectedContinuedNumber",
+    "UnexpectedEndOfBlock", "UnexpectedOtherwise",
 
     "RuntimeException", "InvalidNumberInput", "InvalidStackArgument",
     "StackUnderflow", "UndefinedFunction", "UnexpectedBreak",
@@ -66,11 +66,11 @@ class ParserException(BespokeException):
 class UnexpectedContinuedNumber(ParserException):
     """Unexpected CONTINUED number."""
 
-class UnexpectedElse(ParserException):
-    """Unexpected ELSE command."""
-
 class UnexpectedEndOfBlock(ParserException):
     """Unexpected end of block."""
+
+class UnexpectedOtherwise(ParserException):
+    """Unexpected OTHERWISE command."""
 
 
 class RuntimeException(BespokeException):
