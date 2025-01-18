@@ -40,6 +40,10 @@ for this project. A tutorial on how to use each feature of the language is also
 
 ## Changelog
 
+### v1.1.0 (2025-01-17)
+
+- Changed `CONTROL RESETLOOP` to `CONTROL OTHERWISE`
+
 ### v1.0.2 (2025-01-15)
 
 - Fixed error on empty program
