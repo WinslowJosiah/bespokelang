@@ -4,11 +4,11 @@ __all__ = [
     "TokenizerException", "ExpectedSpecifier", "ImproperSizedNumber",
     "UnterminatedCommentBody", "UnterminatedCommentSignature",
 
-    "ParserException", "UnexpectedContinuedNumber",
+    "ParserException", "UnexpectedContinuedNumber", "UnexpectedElse",
     "UnexpectedEndOfBlock",
 
     "RuntimeException", "InvalidNumberInput", "InvalidStackArgument",
-    "StackUnderflow", "UndefinedFunction", "UnexpectedLoopManipulation",
+    "StackUnderflow", "UndefinedFunction", "UnexpectedBreak",
     "UnexpectedReturn",
 ]
 
@@ -66,6 +66,9 @@ class ParserException(BespokeException):
 class UnexpectedContinuedNumber(ParserException):
     """Unexpected CONTINUED number."""
 
+class UnexpectedElse(ParserException):
+    """Unexpected ELSE command."""
+
 class UnexpectedEndOfBlock(ParserException):
     """Unexpected end of block."""
 
@@ -85,8 +88,8 @@ class StackUnderflow(RuntimeException):
 class UndefinedFunction(RuntimeException):
     """Undefined function."""
 
-class UnexpectedLoopManipulation(RuntimeException):
-    """Loop manipulation used outside of a loop."""
+class UnexpectedBreak(RuntimeException):
+    """Unexpected B command."""
 
 class UnexpectedReturn(RuntimeException):
     """Unexpected RETURN command."""

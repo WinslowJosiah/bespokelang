@@ -8,7 +8,7 @@ from collections import defaultdict, deque
 from collections.abc import Callable, Iterable, Iterator, Sequence
 import sys
 from types import TracebackType
-from typing import NamedTuple, SupportsIndex, TextIO, TypeAlias
+from typing import NamedTuple, SupportsIndex, TextIO, TypeAlias, cast
 import unicodedata
 
 from bespokelang.exceptions import *
@@ -340,18 +340,67 @@ class BespokeInterpreter:
 
         for token in token_iter:
             match token:
-                # CONTROL IF / CONTROL WHILE / CONTROL DOWHILE /
-                # CONTROL FUNCTION
-                case Token("7", "2" | "5" | "7" | "8", _):
+                # CONTROL IF
+                case Token("7", "2", _):
+                    # HACK The AST for CONTROL IF has a certain
+                    # structure, which is interpreted differently from
+                    # every other block, to accomodate CONTROL OTHERWISE
+                    # without changing how token arguments work.
+                    # NOTE The if-block and otherwise-block will have
+                    # the initial and final tokens stripped, unlike the
+                    # other blocks.
+                    if_block = list(self.create_ast(
+                        token_iter,
+                        [token],
+                        inside_block=True,
+                    ))[1:]
+
+                    last_if_token = if_block.pop()
+                    match last_if_token:
+                        # If CONTROL OTHERWISE is the last token of this
+                        # block, continue to the next CONTROL END to get
+                        # the otherwise-block
+                        case Token("7", "9", _):
+                            otherwise_block = list(self.create_ast(
+                                token_iter,
+                                [last_if_token],
+                                inside_block=True,
+                            ))[1:]
+                            otherwise_block.pop()
+                        # Otherwise, the otherwise block is empty
+                        case _:
+                            otherwise_block = []
+
+                    block.append([token, if_block, otherwise_block])
+                # CONTROL END
+                case Token("7", "3", _):
+                    if not inside_block:
+                        raise UnexpectedEndOfBlock
+                    block.append(token)
+                    break
+                # CONTROL WHILE / CONTROL DOWHILE / CONTROL FUNCTION
+                case Token("7", "5" | "7" | "8", _):
                     block.append(self.create_ast(
                         token_iter,
                         [token],
                         inside_block=True,
                     ))
-                # CONTROL END
-                case Token("7", "3", _):
-                    if not inside_block:
-                        raise UnexpectedEndOfBlock
+                # CONTROL OTHERWISE
+                case Token("7", "9", _):
+                    if not block or not isinstance(block[0], Token):
+                        raise UnexpectedElse
+
+                    first_token = category, command, args = block[0]
+                    # CONTROL OTHERWISE is only valid as the last item
+                    # in a CONTROL IF block
+                    match first_token:
+                        case Token("7", "2", _):
+                            pass
+                        case _:
+                            raise UnexpectedElse
+
+                    # This command "closes" the block, similarly to
+                    # CONTROL END
                     block.append(token)
                     break
                 # CONTINUED
@@ -395,10 +444,12 @@ class BespokeInterpreter:
         self.input_stream = PeekableStream(sys.stdin)
 
         self.block_stack: list[tuple[Block, int]] = [(ast, 0)]
-        self.returning = self.breaking = self.resetting = False
+        self.returning = self.breaking = False
 
         while self.block_stack:
             self.block, self.block_pointer = self.block_stack.pop()
+            if not self.block:
+                continue
             first_token = self.block[0]
 
             if self.returning:
@@ -414,23 +465,11 @@ class BespokeInterpreter:
                 match first_token:
                     # function
                     case Token("", _, _):
-                        raise UnexpectedLoopManipulation
+                        raise UnexpectedBreak
                     # CONTROL WHILE / CONTROL DOWHILE
                     case Token("7", "5" | "7", _):
                         self.breaking = False
                         continue
-                    case _:
-                        continue
-
-            if self.resetting:
-                match first_token:
-                    # function
-                    case Token("", _, _):
-                        raise UnexpectedLoopManipulation
-                    # CONTROL WHILE / CONTROL DOWHILE
-                    case Token("7", "5" | "7", _):
-                        self.resetting = False
-                        self.block_pointer = len(self.block) - 1
                     case _:
                         continue
 
@@ -451,13 +490,13 @@ class BespokeInterpreter:
                 if self._handle_token(token):
                     break
 
-        # If we are still returning/breaking/resetting once we've gone
-        # past the main block, we actually weren't supposed to do so in
-        # the first place
+        # If we are still returning/breaking once we've gone past the
+        # main block, we actually weren't supposed to do so in the first
+        # place
         if self.returning:
             raise UnexpectedReturn
-        if self.breaking or self.resetting:
-            raise UnexpectedLoopManipulation
+        if self.breaking:
+            raise UnexpectedBreak
 
     def _handle_token(self, token: Token) -> bool:
         match token:
@@ -642,8 +681,13 @@ class BespokeInterpreter:
             case Token("7", "2", _):
                 if not self.stack:
                     raise StackUnderflow
-                if not self.stack.pop():
-                    return True
+                _, if_block, otherwise_block = self.block
+                if self.stack.pop():
+                    body = if_block
+                else:
+                    body = otherwise_block
+                self.block_stack.append((cast(Block, body), 0))
+                return True
 
             # CONTROL END
             case Token("7", "3", _):
@@ -704,14 +748,9 @@ class BespokeInterpreter:
                 self.functions[name] = [Token("", "")] + list(self.block[1:])
                 return True
 
-            # CONTROL RESETLOOP
-            case Token("7", "9", _):
-                self.resetting = True
-                # NOTE In case the current block is the CONTROL WHILE or
-                # CONTROL DOWHILE loop to reset, the current block must
-                # be pushed back onto the block stack.
-                self.block_stack.append((self.block, self.block_pointer))
-                return True
+            # CONTROL OTHERWISE
+            case Token("7", "9", args):
+                ...
 
             # CONTROL ENDPROGRAM
             case Token("7", "0", _):
