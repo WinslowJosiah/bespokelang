@@ -748,10 +748,6 @@ class BespokeInterpreter:
                 self.functions[name] = [Token("", "")] + list(self.block[1:])
                 return True
 
-            # CONTROL OTHERWISE
-            case Token("7", "9", args):
-                ...
-
             # CONTROL ENDPROGRAM
             case Token("7", "0", _):
                 self.block_stack.clear()
@@ -855,8 +851,9 @@ class BespokeInterpreter:
             case Token("", _, _):
                 pass
 
-            # NOTE I haven't accounted for CONTINUED or COMMENTARY,
-            # because they shouldn't be present at this stage.
+            # NOTE I haven't accounted for CONTROL OTHERWISE, CONTINUED,
+            # or COMMENTARY, because they shouldn't be present at this
+            # stage.
             case _:
                 assert False, token
 
