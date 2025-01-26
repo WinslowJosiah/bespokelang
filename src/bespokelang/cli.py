@@ -17,6 +17,11 @@ def cli():
         metavar="PROGRAM",
         type=str,
     )
+    parser.add_argument(
+        "-d", "--debug",
+        help="print the stack and heap contents after the program ends",
+        action="store_true",
+    )
 
     # If where aren't any arguments to parse
     if len(sys.argv) < 2:
@@ -43,3 +48,13 @@ def cli():
         BespokeInterpreter(file.read()) as bespoke,
     ):
         bespoke.interpret()
+
+    if args.debug:
+        print(f"\nStack: {bespoke.stack}")
+        if bespoke.heap:
+            print("Heap: {")
+            for key, value in sorted(bespoke.heap.items()):
+                print(f"    {key}: {value},")
+            print("}")
+        else:
+            print("Heap: {}")
