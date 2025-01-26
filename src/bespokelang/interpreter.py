@@ -722,8 +722,6 @@ class BespokeInterpreter:
             case Token("7", "5", _):
                 if not self.stack:
                     raise StackUnderflow
-                # NOTE This is similar to CONTROL IF; the difference is
-                # in how the corresponding CONTROL END is handled.
                 if not self.stack.pop():
                     return True
 
