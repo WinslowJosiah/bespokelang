@@ -5,7 +5,7 @@ __all__ = [
 ]
 
 from collections import defaultdict, deque
-from collections.abc import Callable, Iterable, Iterator, Sequence
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 import sys
 from types import TracebackType
 from typing import NamedTuple, SupportsIndex, TextIO, TypeAlias, cast
@@ -234,7 +234,11 @@ def convert_to_digits(text: str) -> str:
 
 class BespokeInterpreter:
     def __init__(self, program: str):
-        self.program = program
+        self.load(program)
+
+        self.stack = []
+        self.heap = {}
+        self.functions: dict[str, Block] = {}
 
     def __enter__(self):
         # HACK We temporarily disable the limit for integer string
@@ -258,6 +262,22 @@ class BespokeInterpreter:
             return True
 
         return False
+
+    @property
+    def stack(self) -> list[int]:
+        return self._stack
+
+    @stack.setter
+    def stack(self, stack: Sequence[int]):
+        self._stack = list(stack)
+
+    @property
+    def heap(self) -> defaultdict[int, int]:
+        return self._heap
+
+    @heap.setter
+    def heap(self, heap: Mapping[int, int]):
+        self._heap = defaultdict(int, heap)
 
     def tokenize(self, digits: str) -> list[Token]:
         """Convert a series of digits into a list of Bespoke tokens."""
@@ -429,61 +449,76 @@ class BespokeInterpreter:
                 block.append(Token("7", "3"))
         return block
 
-    def interpret(self):
+    def load(self, program: str):
+        self.program = program
+        self.digits = convert_to_digits(self.program)
+        self.tokens = self.tokenize(self.digits)
+        self.ast = self.create_ast(self.tokens)
+
+    @classmethod
+    def from_file(cls, file: TextIO):
+        return cls(file.read())
+
+    def interpret(
+            self,
+            input_stream: TextIO = sys.stdin,
+            clear_stack: bool = True,
+            clear_heap: bool = True,
+            clear_functions: bool = True,
+    ):
         """Interpret this Bespoke program."""
-        digits = convert_to_digits(self.program)
-        tokens = self.tokenize(digits)
-        ast = self.create_ast(tokens)
-        if not ast:
-            return
+        if clear_stack:
+            self.stack.clear()
+        if clear_heap:
+            self.heap.clear()
+        if clear_functions:
+            self.functions.clear()
 
-        self.heap: defaultdict[int, int] = defaultdict(int)
-        self.functions: dict[str, Block] = {}
-        self.stack: list[int] = []
+        self.input_stream = PeekableStream(input_stream)
 
-        self.input_stream = PeekableStream(sys.stdin)
+        self._block_stack: list[tuple[Block, int]] = [(self.ast, 0)]
+        self._returning = self._breaking = False
 
-        self.block_stack: list[tuple[Block, int]] = [(ast, 0)]
-        self.returning = self.breaking = False
-
-        while self.block_stack:
-            self.block, self.block_pointer = self.block_stack.pop()
-            if not self.block:
+        while self._block_stack:
+            self._block, self._block_pointer = self._block_stack.pop()
+            if not self._block:
                 continue
-            first_token = self.block[0]
+            first_token = self._block[0]
 
-            if self.returning:
+            if self._returning:
                 match first_token:
                     # function
                     case Token("", _, _):
-                        self.returning = False
+                        self._returning = False
                         continue
                     case _:
                         continue
 
-            if self.breaking:
+            if self._breaking:
                 match first_token:
                     # function
                     case Token("", _, _):
                         raise UnexpectedBreak
                     # CONTROL WHILE / CONTROL DOWHILE
                     case Token("7", "5" | "7", _):
-                        self.breaking = False
+                        self._breaking = False
                         continue
                     case _:
                         continue
 
             # For each token in the block
-            while self.block_pointer < len(self.block):
-                token = self.block[self.block_pointer]
-                self.block_pointer += 1
+            while self._block_pointer < len(self._block):
+                token = self._block[self._block_pointer]
+                self._block_pointer += 1
 
                 # If the "token" is really a block
                 if not isinstance(token, Token):
                     # We should return here when done
-                    self.block_stack.append((self.block, self.block_pointer))
+                    self._block_stack.append(
+                        (self._block, self._block_pointer)
+                    )
                     # The block will start on its first token
-                    self.block_stack.append((token, 0))
+                    self._block_stack.append((token, 0))
                     break
 
                 # Handle this token, and stop iterating if necessary
@@ -493,9 +528,9 @@ class BespokeInterpreter:
         # If we are still returning/breaking once we've gone past the
         # main block, we actually weren't supposed to do so in the first
         # place
-        if self.returning:
+        if self._returning:
             raise UnexpectedReturn
-        if self.breaking:
+        if self._breaking:
             raise UnexpectedBreak
 
     def _handle_token(self, token: Token) -> bool:
@@ -674,27 +709,27 @@ class BespokeInterpreter:
 
             # CONTROL B
             case Token("7", "1", _):
-                self.breaking = True
+                self._breaking = True
                 return True
 
             # CONTROL IF
             case Token("7", "2", _):
                 if not self.stack:
                     raise StackUnderflow
-                _, if_block, otherwise_block = self.block
+                _, if_block, otherwise_block = self._block
                 if self.stack.pop():
                     body = if_block
                 else:
                     body = otherwise_block
-                self.block_stack.append((cast(Block, body), 0))
+                self._block_stack.append((cast(Block, body), 0))
                 return True
 
             # CONTROL END
             case Token("7", "3", _):
-                match self.block[0]:
+                match self._block[0]:
                     # CONTROL WHILE
                     case Token("7", "5", _):
-                        self.block_stack.append((self.block, 0))
+                        self._block_stack.append((self._block, 0))
                         # NOTE The condition of a CONTROL WHILE loop is
                         # tested at the start.
                     # CONTROL DOWHILE
@@ -702,7 +737,7 @@ class BespokeInterpreter:
                         if not self.stack:
                             raise StackUnderflow
                         if self.stack.pop():
-                            self.block_stack.append((self.block, 0))
+                            self._block_stack.append((self._block, 0))
                     case _:
                         pass
 
@@ -713,9 +748,9 @@ class BespokeInterpreter:
                 if function_ is None:
                     raise UndefinedFunction
                 # We should return here when done
-                self.block_stack.append((self.block, self.block_pointer))
+                self._block_stack.append((self._block, self._block_pointer))
                 # The function will start on its first token
-                self.block_stack.append((function_, 0))
+                self._block_stack.append((function_, 0))
                 return True
 
             # CONTROL WHILE
@@ -727,7 +762,7 @@ class BespokeInterpreter:
 
             # CONTROL RETURN
             case Token("7", "6", _):
-                self.returning = True
+                self._returning = True
                 return True
 
             # CONTROL DOWHILE
@@ -743,12 +778,12 @@ class BespokeInterpreter:
                 # blank token. This way, it's identifiable as a called
                 # function on the block stack, and I don't have to
                 # implement a complex special case.
-                self.functions[name] = [Token("", "")] + list(self.block[1:])
+                self.functions[name] = [Token("", "")] + list(self._block[1:])
                 return True
 
             # CONTROL ENDPROGRAM
             case Token("7", "0", _):
-                self.block_stack.clear()
+                self._block_stack.clear()
                 return True
 
             # STACKTOP F

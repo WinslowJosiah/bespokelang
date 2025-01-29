@@ -45,7 +45,7 @@ def cli():
     args = parser.parse_args()
     with (
         open(args.program, "r") as file,
-        BespokeInterpreter(file.read()) as bespoke,
+        BespokeInterpreter.from_file(file) as bespoke,
     ):
         bespoke.interpret()
 
