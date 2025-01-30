@@ -307,7 +307,7 @@ class BespokeInterpreter:
                 # H / DO / PUSH / INPUT / OUTPUT / CONTROL / STACKTOP
                 case "1" | "2" | "4" | "5" | "6" | "7" | "8":
                     if i + 1 > len(digits):
-                        raise ExpectedSpecifier(digits[i:])
+                        raise ExpectedSpecifier(digits[i - 1:])
                     next_digit = digits[i]
                     i += 1
 
