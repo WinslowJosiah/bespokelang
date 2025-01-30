@@ -49,12 +49,16 @@ def cli():
     ):
         bespoke.interpret()
 
-    if args.debug:
-        print(f"\nStack: {bespoke.stack}")
-        if bespoke.heap:
-            print("Heap: {")
-            for key, value in sorted(bespoke.heap.items()):
-                print(f"    {key}: {value},")
-            print("}")
-        else:
-            print("Heap: {}")
+    if not args.debug:
+        return
+
+    print(f"\nStack: {bespoke.stack}")
+    if not bespoke.heap:
+        print("Heap: {}")
+    elif len(bespoke.heap) <= 32:
+        print("Heap: {")
+        for key, value in sorted(bespoke.heap.items()):
+            print(f"    {key}: {value},")
+        print("}")
+    else:
+        print(f"Heap: {dict(sorted(bespoke.heap.items()))}")
