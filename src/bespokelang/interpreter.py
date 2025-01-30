@@ -234,11 +234,12 @@ def convert_to_digits(text: str) -> str:
 
 class BespokeInterpreter:
     def __init__(self, program: str):
-        self.load(program)
-
         self.stack = []
         self.heap = {}
         self.functions: dict[str, Block] = {}
+
+        self.program = program
+        self._loaded = False
 
     def __enter__(self):
         # HACK We temporarily disable the limit for integer string
@@ -449,8 +450,7 @@ class BespokeInterpreter:
                 block.append(Token("7", "3"))
         return block
 
-    def load(self, program: str):
-        self.program = program
+    def _load_program(self):
         self.digits = convert_to_digits(self.program)
         self.tokens = self.tokenize(self.digits)
         self.ast = self.create_ast(self.tokens)
@@ -475,6 +475,8 @@ class BespokeInterpreter:
             self.functions.clear()
 
         self.input_stream = PeekableStream(input_stream)
+
+        self._load_program()
 
         self._block_stack: list[tuple[Block, int]] = [(self.ast, 0)]
         self._returning = self._breaking = False
