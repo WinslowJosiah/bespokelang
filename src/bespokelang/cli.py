@@ -23,7 +23,7 @@ def cli():
         action="store_true",
     )
 
-    # If where aren't any arguments to parse
+    # If there aren't any arguments to parse
     if len(sys.argv) < 2:
         # Print help message and exit with error
         parser.print_help()
