@@ -42,41 +42,50 @@ def cli():
         return wrapper
     parser.error = custom_error_handler(parser)
 
-    # Actually parse and handle the arguments
+    # Parse the arguments
     args = parser.parse_args()
+
+    # HACK We temporarily disable the limit for integer string
+    # conversion, so large numbers can be outputted in full.
+    int_max_str_digits = sys.get_int_max_str_digits()
+    sys.set_int_max_str_digits(0)
+
     try:
+        # Open and run Bespoke file
         with open(args.program, "r") as file:
             bespoke = BespokeInterpreter.from_file(file)
             bespoke.interpret()
+    # Error from Bespoke program
     except BespokeException as e:
         sys.stderr.write(str(e))
         sys.exit(1)
+    # Error from opening nonexistent file
     except FileNotFoundError:
         sys.stderr.write("File does not exist.")
         sys.exit(1)
+    # Any other error from opening Bespoke file
     except OSError as e:
         sys.stderr.write(
             f"Could not open file.\n\t{type(e).__name__}: {e}"
         )
         sys.exit(1)
-
-    if not args.debug:
-        return
-
-    # HACK Just in case the stack or heap has any super large values,
-    # the limit for integer string conversion is temporarily disabled.
-    int_max_str_digits = sys.get_int_max_str_digits()
-    sys.set_int_max_str_digits(0)
-
-    print(f"\nStack: {bespoke.stack}")
-    if not bespoke.heap:
-        print("Heap: {}")
-    elif len(bespoke.heap) <= 32:
-        print("Heap: {")
-        for key, value in sorted(bespoke.heap.items()):
-            print(f"    {key}: {value},")
-        print("}")
+    # If Bespoke program ran without errors
     else:
-        print(f"Heap: {dict(sorted(bespoke.heap.items()))}")
+        if not args.debug:
+            return
 
-    sys.set_int_max_str_digits(int_max_str_digits)
+        # Print stack and heap contents
+        print(f"\nStack: {bespoke.stack}")
+        if not bespoke.heap:
+            print("Heap: {}")
+        elif len(bespoke.heap) <= 32:
+            print("Heap: {")
+            for key, value in sorted(bespoke.heap.items()):
+                print(f"    {key}: {value},")
+            print("}")
+        else:
+            print(f"Heap: {dict(sorted(bespoke.heap.items()))}")
+    # Before this function ends
+    finally:
+        # Restore integer string conversion limit
+        sys.set_int_max_str_digits(int_max_str_digits)
