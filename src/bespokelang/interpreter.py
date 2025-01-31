@@ -811,8 +811,8 @@ class BespokeInterpreter:
                 if a < 0 and b < 0:
                     raise InvalidStackArgument((a, b))
 
-                # A positive b takes the bth power of a
-                if b > 0:
+                # A nonnegative b takes the bth power of a
+                if b >= 0:
                     self.stack.append(a ** b)
                 # A negative b takes the bth root of a
                 else:
