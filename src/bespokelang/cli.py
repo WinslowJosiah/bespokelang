@@ -3,6 +3,7 @@ __all__ = ["cli"]
 from argparse import ArgumentParser
 import sys
 
+from bespokelang.exceptions import *
 from bespokelang.interpreter import *
 
 
@@ -44,21 +45,18 @@ def cli():
     # Actually parse and handle the arguments
     args = parser.parse_args()
     try:
-        with (
-            open(args.program, "r") as file,
-            BespokeInterpreter.from_file(file) as bespoke,
-        ):
+        with open(args.program, "r") as file:
+            bespoke = BespokeInterpreter.from_file(file)
             bespoke.interpret()
+    except BespokeException as e:
+        sys.stderr.write(str(e))
+        sys.exit(1)
     except FileNotFoundError:
         sys.stderr.write("File does not exist.")
         sys.exit(1)
-    except OSError:
-        exc_type, exc_value, _ = sys.exc_info()
-        assert exc_type is not None
-        assert exc_value is not None
-
+    except OSError as e:
         sys.stderr.write(
-            f"Could not open file.\n\t{exc_type.__name__}: {exc_value}"
+            f"Could not open file.\n\t{type(e).__name__}: {e}"
         )
         sys.exit(1)
 

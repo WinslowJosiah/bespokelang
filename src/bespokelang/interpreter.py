@@ -259,7 +259,6 @@ class BespokeInterpreter:
         sys.set_int_max_str_digits(self._int_max_str_digits)
 
         if isinstance(exc_value, BespokeException):
-            sys.stderr.write(str(exc_value))
             return True
 
         return False
