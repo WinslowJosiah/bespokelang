@@ -52,6 +52,11 @@ def cli():
     if not args.debug:
         return
 
+    # HACK Just in case the stack or heap has any super large values,
+    # the limit for integer string conversion is temporarily disabled.
+    int_max_str_digits = sys.get_int_max_str_digits()
+    sys.set_int_max_str_digits(0)
+
     print(f"\nStack: {bespoke.stack}")
     if not bespoke.heap:
         print("Heap: {}")
@@ -62,3 +67,5 @@ def cli():
         print("}")
     else:
         print(f"Heap: {dict(sorted(bespoke.heap.items()))}")
+
+    sys.set_int_max_str_digits(int_max_str_digits)
