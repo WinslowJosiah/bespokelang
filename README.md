@@ -40,6 +40,20 @@ for this project. A tutorial on how to use each feature of the language is also
 
 ## Changelog
 
+### v1.2.0 (2025-01-31)
+
+- Added `--debug` option to CLI, for displaying stack/heap contents after
+program execution
+- Added `BespokeInterpreter.from_file()` method
+- Fixed bug where `Specifier was expected, but none found` would not show the
+command which expected a specifier
+- Fixed behavior of `STACKTOP POW` with a second argument of 0
+- `BespokeInterpreter` no longer writes error message to STDERR when used as a
+context manager
+- Many properties of `BespokeInterpreter` objects are now private, or have
+getters/setters
+- CLI now handles file-opening errors
+
 ### v1.1.0 (2025-01-17)
 
 - Changed `CONTROL RESETLOOP` to `CONTROL OTHERWISE`
