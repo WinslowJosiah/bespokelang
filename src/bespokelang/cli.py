@@ -43,11 +43,24 @@ def cli():
 
     # Actually parse and handle the arguments
     args = parser.parse_args()
-    with (
-        open(args.program, "r") as file,
-        BespokeInterpreter.from_file(file) as bespoke,
-    ):
-        bespoke.interpret()
+    try:
+        with (
+            open(args.program, "r") as file,
+            BespokeInterpreter.from_file(file) as bespoke,
+        ):
+            bespoke.interpret()
+    except FileNotFoundError:
+        sys.stderr.write("File does not exist.")
+        sys.exit(1)
+    except OSError:
+        exc_type, exc_value, _ = sys.exc_info()
+        assert exc_type is not None
+        assert exc_value is not None
+
+        sys.stderr.write(
+            f"Could not open file.\n\t{exc_type.__name__}: {exc_value}"
+        )
+        sys.exit(1)
 
     if not args.debug:
         return
