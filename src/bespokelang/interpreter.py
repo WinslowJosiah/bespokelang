@@ -722,7 +722,19 @@ class BespokeInterpreter:
 
             # CONTROL B
             case Token("7", "1", _):
-                self._breaking = True
+                # HACK If already within the body of a loop, do not
+                # propagate the break outside of this block.
+                first_token = self._block[0]
+                match first_token:
+                    # function
+                    case Token("", _, _):
+                        raise UnexpectedBreak
+                    # CONTROL WHILE / CONTROL DOWHILE
+                    case Token("7", "5" | "7", _):
+                        self._breaking = False
+                    case _:
+                        self._breaking = True
+
                 return True
 
             # CONTROL IF
@@ -775,7 +787,16 @@ class BespokeInterpreter:
 
             # CONTROL RETURN
             case Token("7", "6", _):
-                self._returning = True
+                # HACK If already within the body of a function, do not
+                # propagate the return outside of this block.
+                first_token = self._block[0]
+                match first_token:
+                    # function
+                    case Token("", _, _):
+                        self._returning = False
+                    case _:
+                        self._returning = True
+
                 return True
 
             # CONTROL DOWHILE
