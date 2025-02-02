@@ -7,6 +7,7 @@ __all__ = [
 from collections import defaultdict, deque
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 import sys
+import time
 from types import TracebackType
 from typing import NamedTuple, SupportsIndex, TextIO, TypeAlias, cast
 import unicodedata
@@ -233,6 +234,8 @@ def convert_to_digits(text: str) -> str:
 
 
 class BespokeInterpreter:
+    _FLUSH_INTERVAL = 0.5
+
     def __init__(self, program: str):
         self.stack = []
         self.heap = {}
@@ -454,6 +457,12 @@ class BespokeInterpreter:
         self.tokens = self.tokenize(self.digits)
         self.ast = self.create_ast(self.tokens)
 
+    def _flush(self, force: bool = False):
+        current_time = time.monotonic()
+        if force or current_time >= self._last_flush + self._FLUSH_INTERVAL:
+            self._last_flush = current_time
+            sys.stdout.flush()
+
     @classmethod
     def from_file(cls, file: TextIO):
         return cls(file.read())
@@ -479,6 +488,7 @@ class BespokeInterpreter:
 
         self._block_stack: list[tuple[Block, int]] = [(self.ast, 0)]
         self._returning = self._breaking = False
+        self._last_flush = time.monotonic()
 
         while self._block_stack:
             self._block, self._block_pointer = self._block_stack.pop()
@@ -669,7 +679,7 @@ class BespokeInterpreter:
 
             # INPUT N
             case Token("5", "1" | "3" | "5" | "7" | "9", _):
-                sys.stdout.flush()
+                self._flush(force=True)
                 inp: list[str] = []
                 # Skip spaces at start
                 while self.input_stream.peek(1).isspace():
@@ -689,7 +699,7 @@ class BespokeInterpreter:
 
             # INPUT CH
             case Token("5", "2" | "4" | "6" | "8" | "0", _):
-                sys.stdout.flush()
+                self._flush(force=True)
                 if (char := self.input_stream.read(1)):
                     self.stack.append(ord(char))
                 else:
@@ -701,12 +711,14 @@ class BespokeInterpreter:
                 if not self.stack:
                     raise StackUnderflow
                 sys.stdout.write(str(self.stack.pop()))
+                self._flush()
 
             # OUTPUT CH
             case Token("6", "2" | "4" | "6" | "8" | "0", _):
                 if not self.stack:
                     raise StackUnderflow
                 sys.stdout.write(chr(self.stack.pop() % 0x110000))
+                self._flush()
 
             # CONTROL B
             case Token("7", "1", _):
