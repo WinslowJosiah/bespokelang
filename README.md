@@ -40,6 +40,11 @@ for this project. A tutorial on how to use each feature of the language is also
 
 ## Changelog
 
+### v1.2.1 (2025-02-02)
+
+- Fixed behavior of `CONTROL B` and `CONTROL RETURN` when not nested
+- The output buffer is now flushed every 0.5 seconds
+
 ### v1.2.0 (2025-01-31)
 
 - Added `--debug` option to CLI, for displaying stack/heap contents after
