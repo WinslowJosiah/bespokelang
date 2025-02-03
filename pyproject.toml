@@ -1,6 +1,6 @@
 [project]
 name = "bespokelang"
-version = "1.2.2"
+version = "1.2.3"
 requires-python = ">=3.10"
 authors = [
     { name="Josiah Winslow", email="winslowjosiah@gmail.com" },
