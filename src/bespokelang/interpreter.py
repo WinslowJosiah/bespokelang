@@ -578,7 +578,7 @@ class BespokeInterpreter:
                 if n > 0:
                     self.stack.pop(-n)
                 # A negative n pops the nth item from the bottom
-                else:
+                elif n < 0:
                     self.stack.pop(-n - 1)
 
             # DO ROT
@@ -592,7 +592,7 @@ class BespokeInterpreter:
                 if n > 0:
                     self.stack[-n:] = [self.stack[-1]] + self.stack[-n:-1]
                 # A negative n brings items from bottom to top
-                else:
+                elif n < 0:
                     self.stack[n:] = self.stack[n + 1:] + [self.stack[n]]
 
             # DO COPY
@@ -612,7 +612,7 @@ class BespokeInterpreter:
                 if n > 0:
                     self.stack.append(self.stack[-n])
                 # A negative n copies the nth item from the bottom
-                else:
+                elif n < 0:
                     self.stack.append(self.stack[-n - 1])
 
             # DO SWITCH
@@ -634,7 +634,7 @@ class BespokeInterpreter:
                         self.stack[-n], self.stack[-1]
                     )
                 # A negative n swaps with the nth item from the bottom
-                else:
+                elif n < 0:
                     self.stack[-1], self.stack[-n - 1] = (
                         self.stack[-n - 1], self.stack[-1]
                     )
