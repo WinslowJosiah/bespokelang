@@ -40,6 +40,10 @@ for this project. A tutorial on how to use each feature of the language is also
 
 ## Changelog
 
+### v1.2.2 (2025-02-03)
+
+- Fixed behavior of `DO TURNOVERN` with an argument of 0
+
 ### v1.2.1 (2025-02-02)
 
 - Fixed behavior of `CONTROL B` and `CONTROL RETURN` when not nested
