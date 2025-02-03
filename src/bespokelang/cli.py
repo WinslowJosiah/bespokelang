@@ -52,7 +52,7 @@ def cli():
 
     try:
         # Open and run Bespoke file
-        with open(args.program, "r") as file:
+        with open(args.program, "r", encoding="utf-8") as file:
             bespoke = BespokeInterpreter.from_file(file)
             bespoke.interpret()
     # Error from Bespoke program
