@@ -654,7 +654,7 @@ class BespokeInterpreter:
                 if n > 0:
                     self.stack[-n:] = self.stack[:-n - 1:-1]
                 # A negative n reverses the bottom n items
-                else:
+                elif n < 0:
                     self.stack[:-n] = self.stack[-n - 1::-1]
 
             # DO ROTINVERSE
