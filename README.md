@@ -43,6 +43,8 @@ for this project. A tutorial on how to use each feature of the language is also
 ### v1.2.2 (2025-02-03)
 
 - Fixed behavior of `DO TURNOVERN` with an argument of 0
+- Fixed behavior of `DO ROTINVERSE` with an argument outside the range from 1 to
+the stack size
 
 ### v1.2.1 (2025-02-02)
 
