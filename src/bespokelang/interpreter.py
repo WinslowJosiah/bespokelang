@@ -662,6 +662,8 @@ class BespokeInterpreter:
                 if not self.stack:
                     raise StackUnderflow
                 n = self.stack.pop()
+                if not n or abs(n) > len(self.stack):
+                    raise InvalidStackArgument(n)
                 # A positive n brings items from bottom to top
                 if n > 0:
                     self.stack[-n:] = self.stack[-n + 1:] + [self.stack[-n]]
