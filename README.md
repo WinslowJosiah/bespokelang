@@ -40,6 +40,10 @@ for this project. A tutorial on how to use each feature of the language is also
 
 ## Changelog
 
+### v1.2.4 (2025-02-06)
+
+- Program is now assumed to be in UTF-8
+
 ### v1.2.3 (2025-02-03)
 
 - Fixed behavior of `DO ROTINVERSE` with an argument outside the range from 1 to
