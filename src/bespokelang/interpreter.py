@@ -773,7 +773,7 @@ class BespokeInterpreter:
                 name = "".join(args)
                 function_ = self.functions.get(name, None)
                 if function_ is None:
-                    raise UndefinedFunction
+                    raise UndefinedFunction(name)
                 # We should return here when done
                 self._block_stack.append((self._block, self._block_pointer))
                 # The function will start on its first token
