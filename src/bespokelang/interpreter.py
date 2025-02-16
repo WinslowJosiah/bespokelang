@@ -459,8 +459,12 @@ class BespokeInterpreter:
 
     def _flush(self, force: bool = False):
         current_time = time.monotonic()
-        if force or current_time >= self._last_flush + self._FLUSH_INTERVAL:
+        if force or (
+            self._wrote_since_last_flush
+            and current_time >= self._last_flush + self._FLUSH_INTERVAL
+        ):
             self._last_flush = current_time
+            self._wrote_since_last_flush = False
             sys.stdout.flush()
 
     @classmethod
@@ -489,6 +493,7 @@ class BespokeInterpreter:
         self._block_stack: list[tuple[Block, int]] = [(self.ast, 0)]
         self._returning = self._breaking = False
         self._last_flush = time.monotonic()
+        self._wrote_since_last_flush = False
 
         while self._block_stack:
             self._block, self._block_pointer = self._block_stack.pop()
@@ -533,7 +538,9 @@ class BespokeInterpreter:
                     break
 
                 # Handle this token, and stop iterating if necessary
-                if self._handle_token(token):
+                should_break = self._handle_token(token)
+                self._flush()
+                if should_break:
                     break
 
         # If we are still returning/breaking once we've gone past the
@@ -713,14 +720,14 @@ class BespokeInterpreter:
                 if not self.stack:
                     raise StackUnderflow
                 sys.stdout.write(str(self.stack.pop()))
-                self._flush()
+                self._wrote_since_last_flush = True
 
             # OUTPUT CH
             case Token("6", "2" | "4" | "6" | "8" | "0", _):
                 if not self.stack:
                     raise StackUnderflow
                 sys.stdout.write(chr(self.stack.pop() % 0x110000))
-                self._flush()
+                self._wrote_since_last_flush = True
 
             # CONTROL B
             case Token("7", "1", _):
