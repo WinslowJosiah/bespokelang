@@ -40,6 +40,12 @@ for this project. A tutorial on how to use each feature of the language is also
 
 ## Changelog
 
+### v1.2.5 (2025-02-16)
+
+- Fixed bug where `Undefined function` would not show the function which was
+undefined
+- Improved auto-flushing of output buffer
+
 ### v1.2.4 (2025-02-06)
 
 - Program is now assumed to be in UTF-8
