@@ -40,6 +40,10 @@ for this project. A tutorial on how to use each feature of the language is also
 
 ## Changelog
 
+### v1.2.6 (2025-09-05)
+
+- Make `DO ROT`/`DO ROTINVERSE` with negative numbers behave as documented
+
 ### v1.2.5 (2025-02-16)
 
 - Fixed bug where `Undefined function` would not show the function which was
